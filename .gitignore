@@ -1,0 +1,4 @@
+*.pyc
+media
+migrations
+logfile
