@@ -28,4 +28,9 @@ urlpatterns = [
     url(r'^api/v1/start_build/$', start_build, name="start_build"), 
     url(r'^api/v1/stop_build/$', stop_build, name="stop_build"),                    
     url(r'^api/v1/delete_job/$', delete_job, name="delete_job"),
+
+    url(r'^api/v1/create_node/$', create_node, name="create_node"),
+    url(r'^api/v1/enable_node/$', enable_node, name="enable_node"),
+    url(r'^api/v1/disable_node/$', disable_node, name="disable_node"),
+    url(r'^api/v1/delete_node/$', delete_node, name="delete_node"),
 ]
