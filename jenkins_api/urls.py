@@ -16,6 +16,12 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+from jauth.views import *
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^api/v1/get_token/$', get_token, name="get_token"),
+    url(r'^api/v1/create_job/$', create_job, name="create_job"),
+    url(r'^api/v1/copy_job/$', copy_job, name="copy_job"),    
+    url(r'^api/v1/delete_job/$', delete_job, name="delete_job"),
 ]
