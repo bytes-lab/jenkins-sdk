@@ -57,15 +57,17 @@ def login_only(function):
     return wrap
 
 
-@api_view(["POST"])
-@login_only
-def create_job(request):
-    log.info('create_job is called')
-
+def get_server(request):
     url = request.user.last_name
     username = request.user.username
     password = request.user.first_name
-    server = jenkins.Jenkins(url, username=username, password=password)
+    return jenkins.Jenkins(url, username=username, password=password)
+
+
+@api_view(["POST"])
+@login_only
+def create_job(request):
+    server = get_server(request)
 
     name = request.data.get('name', '')
     config_xml = request.data.get('config_xml') or jenkins.EMPTY_CONFIG_XML
@@ -88,10 +90,7 @@ def create_job(request):
 @api_view(["POST"])
 @login_only
 def delete_job(request):
-    url = request.user.last_name
-    username = request.user.username
-    password = request.user.first_name
-    server = jenkins.Jenkins(url, username=username, password=password)
+    server = get_server(request)
 
     name = request.data.get('name', '')
     log.debug('delete_job is called with name:{}'.format(name))
@@ -111,10 +110,7 @@ def delete_job(request):
 @api_view(["POST"])
 @login_only
 def copy_job(request):
-    url = request.user.last_name
-    username = request.user.username
-    password = request.user.first_name
-    server = jenkins.Jenkins(url, username=username, password=password)
+    server = get_server(request)
 
     from_name = request.data.get('from_name', '')
     to_name = request.data.get('to_name', '')
@@ -132,21 +128,91 @@ def copy_job(request):
     return Response({"status": "success", "jobs": jobs})
 
 
+@api_view(["POST"])
+@login_only
+def reconfig_job(request):
+    server = get_server(request)
+
+    name = request.data.get('name', '')
+    config_xml = request.data.get('config_xml') or jenkins.RECONFIG_XML
+
+    log.debug('reconfig_job is called with name:{}, config_xml:{}' \
+        .format(name, config_xml))
+
+    try:
+        server.reconfig_job(name, config_xml)
+        jobs = server.get_jobs()
+    except Exception, e:
+        log.debug(e)
+        return Response({"status": "failed", 
+                         "msg": e.message or "Invalid job name"})
+
+    log.info('The job:{} is reconfigured successfully'.format(name))
+    return Response({"status": "success", "jobs": jobs})
 
 
+@api_view(["POST"])
+@login_only
+def status_job(request):
+    server = get_server(request)
 
-    server.build_job('empty')
-    server.disable_job('empty')
-    server.enable_job('empty_copy')
-    server.reconfig_job('empty_copy', jenkins.RECONFIG_XML)
+    name = request.data.get('name', '')
+    depth = int(request.data.get('depth', 0))
+    fetch_all_builds = request.data.get('fetch_all_builds', False)
 
-    # build a parameterized job
-    # requires creating and configuring the api-test job to accept 'param1' & 'param2'
-    server.build_job('api-test', {'param1': 'test value 1', 'param2': 'test value 2'})
-    last_build_number = server.get_job_info('api-test')['lastCompletedBuild']['number']
-    build_info = server.get_build_info('api-test', last_build_number)
-    print build_info
+    log.debug('status_job is called with name:{}, depth:{}, fetch_all_builds:{}' \
+        .format(name, depth, fetch_all_builds))
 
-    # get all jobs from the specific view
-    jobs = server.get_jobs(view_name='View Name')
-    print jobs
+    try:
+        info = server.get_job_info(name, depth=depth, fetch_all_builds=fetch_all_builds)
+    except Exception, e:
+        log.debug(e)
+        return Response({"status": "failed", 
+                         "msg": e.message or "Invalid job name"})
+
+    log.info('The job ({}) status is retrieved successfully'.format(name))
+    return Response({"status": "success", "job_info": info})
+
+
+@api_view(["POST"])
+@login_only
+def start_build(request):
+    server = get_server(request)
+
+    name = request.data.get('name', '')
+    params = request.data.get('params')
+
+    log.debug('start_build is called with name:{}, params:{}' \
+        .format(name, params))
+
+    try:
+        server.build_job(name, params)
+    except Exception, e:
+        log.debug(e)
+        return Response({"status": "failed", 
+                         "msg": e.message or "Invalid job name"})
+
+    log.info('The build of the job ({}) is started successfully'.format(name))
+    return Response({"status": "success", "msg": "build started"})
+    
+
+@api_view(["POST"])
+@login_only
+def stop_build(request):
+    server = get_server(request)
+
+    name = request.data.get('name')
+    number = request.data.get('number')
+
+    log.debug('stop_build is called with name:{}, number:{}' \
+        .format(name, number))
+
+    try:
+        server.stop_build(name, number)
+    except Exception, e:
+        log.debug(e)
+        return Response({"status": "failed", 
+                         "msg": e.message or "Invalid job name"})
+
+    log.info('The build of the job ({}) is stoped successfully'.format(name))
+    return Response({"status": "success", "msg": "build stoped"})

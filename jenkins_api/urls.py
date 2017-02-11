@@ -23,5 +23,8 @@ urlpatterns = [
     url(r'^api/v1/get_token/$', get_token, name="get_token"),
     url(r'^api/v1/create_job/$', create_job, name="create_job"),
     url(r'^api/v1/copy_job/$', copy_job, name="copy_job"),    
+    url(r'^api/v1/reconfig_job/$', reconfig_job, name="reconfig_job"), 
+    url(r'^api/v1/status_job/$', status_job, name="status_job"),            
+    url(r'^api/v1/start_build/$', start_build, name="start_build"),                
     url(r'^api/v1/delete_job/$', delete_job, name="delete_job"),
 ]
