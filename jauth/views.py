@@ -186,6 +186,7 @@ def start_build(request):
         .format(name, params))
 
     try:
+        next_build_number = server.get_job_info(name)['nextBuildNumber']
         server.build_job(name, params)
     except Exception, e:
         log.debug(e)
@@ -193,7 +194,7 @@ def start_build(request):
                          "msg": e.message or "Invalid job name"})
 
     log.info('The build of the job ({}) is started successfully'.format(name))
-    return Response({"status": "success", "msg": "build started"})
+    return Response({"status": "success", "build_number": next_build_number})
     
 
 @api_view(["POST"])
@@ -201,8 +202,8 @@ def start_build(request):
 def stop_build(request):
     server = get_server(request)
 
-    name = request.data.get('name')
-    number = request.data.get('number')
+    name = request.data.get('name', '')
+    number = request.data.get('build_number')
 
     log.debug('stop_build is called with name:{}, number:{}' \
         .format(name, number))
@@ -212,7 +213,7 @@ def stop_build(request):
     except Exception, e:
         log.debug(e)
         return Response({"status": "failed", 
-                         "msg": e.message or "Invalid job name"})
+                         "msg": e.message})
 
     log.info('The build of the job ({}) is stoped successfully'.format(name))
     return Response({"status": "success", "msg": "build stoped"})
