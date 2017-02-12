@@ -225,34 +225,38 @@ def create_node(request):
     server = get_server(request)
 
     name = request.data.get('name', '')
-    config_xml = request.data.get('config_xml') or jenkins.EMPTY_CONFIG_XML
+    numExecutors = request.data.get('numExecutors', 2)
+    nodeDescription = request.data.get('nodeDescription')
+    labels = request.data.get('labels')
+    exclusive = request.data.get('exclusive', False)
 
-    log.debug('create_node is called with name:{}, config_xml:{}' \
-        .format(name, config_xml))
+    log.debug('create_node is called with name:{}, numExecutors:{}, nodeDescription:{}, labels:{}, exclusive:{}' \
+        .format(name, numExecutors, nodeDescription, labels, exclusive))
 
     try:
-        server.create_node(name, config_xml)
         # create node with parameters
-        params = {
-            'port': '22',
-            'username': 'juser',
-            'credentialsId': '10f3a3c8-be35-327e-b60b-a3e5edb0e45f',
-            'host': 'my.jenkins.slave1'
-        }
+        # params = {
+        #     'port': '22',
+        #     'username': 'juser',
+        #     'credentialsId': '10f3a3c8-be35-327e-b60b-a3e5edb0e45f',
+        #     'host': 'my.jenkins.slave1'
+        # }
         server.create_node(
-            'slave1',
-            nodeDescription='my test slave',
-            remoteFS='/home/juser',
-            labels='precise',
-            exclusive=True,
-            launcher=jenkins.LAUNCHER_SSH,
-            launcher_params=params)        
-        
-        nodes = get_nodes()
+            name,
+            numExecutors=numExecutors,
+            nodeDescription=nodeDescription,
+            # remoteFS='/home/juser',
+            labels=labels,
+            exclusive=exclusive
+            # launcher=jenkins.LAUNCHER_SSH,
+            # launcher_params=params
+            )        
+
+        nodes = server.get_nodes()
     except Exception, e:
         log.debug(e)
         return Response({"status": "failed", 
-                         "msg": e.message or "Invalid job name"})
+                         "msg": e.message})
 
     log.info('The node:{} is created successfully'.format(name))
     return Response({"status": "success", "nodes": nodes})
@@ -268,7 +272,7 @@ def delete_node(request):
 
     try:
         server.delete_node(name)
-        nodes = get_nodes()
+        nodes = server.get_nodes()
     except Exception, e:
         log.debug(e)
         return Response({"status": "failed", 
@@ -316,3 +320,24 @@ def disable_node(request):
 
     log.info('The node:{} is disabled successfully'.format(name))
     return Response({"status": "success", "node_config": node_config})
+
+
+@api_view(["POST"])
+@login_only
+def install_plugin(request):
+    server = get_server(request)
+
+    name = request.data.get('name', '')
+    include_dependencies = request.data.get('include_dependencies', True)
+    log.debug('install_plugin is called with name:{}, include_dependencies:{}' \
+        .format(name, include_dependencies))
+
+    try:
+        info = server.install_plugin(name, include_dependencies=include_dependencies)
+    except Exception, e:
+        log.debug(e)
+        return Response({"status": "failed", 
+                         "msg": e.message})
+
+    log.info('The plugin:{} is installed successfully'.format(name))
+    return Response({"status": "success", "restart": info})

@@ -33,4 +33,6 @@ urlpatterns = [
     url(r'^api/v1/enable_node/$', enable_node, name="enable_node"),
     url(r'^api/v1/disable_node/$', disable_node, name="disable_node"),
     url(r'^api/v1/delete_node/$', delete_node, name="delete_node"),
+
+    url(r'^api/v1/install_plugin/$', install_plugin, name="install_plugin"),    
 ]
