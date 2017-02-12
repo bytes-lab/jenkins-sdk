@@ -15,49 +15,58 @@ All requests are POST
 	header: token:<token>
 	{"name":"empty-2", "config_xml":"<xml></xml>"}
 
+- delete a job
+	/api/v1/delete_job/
+	header: token:<token>
+	{"name":"empty"}
 
-/api/v1/delete_job/
-header: token:<token>
-{"name":"empty"}
+- copy a job
+	/api/v1/copy_job/
+	header: token:<token>
+	{"from_name":"empty-1", "to_name":"empty-3"}
 
-/api/v1/copy_job/
-header: token:<token>
-{"from_name":"empty-1", "to_name":"empty-3"}
+- reconfigure a job
+	/api/v1/reconfig_job/
+	header: token:<token>
+	{"name":"empty-1"}
 
-/api/v1/reconfig_job/
-header: token:<token>
-{"name":"empty-1"}
+- get status of a job
+	/api/v1/status_job/
+	header: token:<token>
+	{"name":"first_job", "depth": 1, "fetch_all_builds":true}
 
-/api/v1/status_job/
-header: token:<token>
-{"name":"first_job", "depth": 1, "fetch_all_builds":true}
+- start build a job
+	/api/v1/start_build/
+	header: token:<token>
+	{"name":"empty-1", "params1":{"first":1, "second":2}}
 
-/api/v1/start_build/
-header: token:<token>
-{"name":"empty-1", "params1":{"first":1, "second":2}}
+- stop build a job
+	/api/v1/stop_build/
+	header: token:<token>
+	{"name":"empty-1", "build_number":"3"}
 
-/api/v1/stop_build/
-header: token:<token>
-{"name":"empty-1", "build_number":"3"}
+- create a node
+	/api/v1/create_node/
+	header: token:<token>
+	{
+		"name":"node-3",
+		"numExecutors":5,
+		"nodeDescription":"nodeDescription",
+		"labels":"labels",
+		"exclusive":true
+	}
 
-/api/v1/create_node/
-header: token:<token>
-{
-	"name":"node-3",
-	"numExecutors":5,
-	"nodeDescription":"nodeDescription",
-	"labels":"labels",
-	"exclusive":true
-}
+- delete a node
+	/api/v1/delete_node/
+	header: token:<token>
+	{"name":"node-1"}
 
-/api/v1/delete_node/
-header: token:<token>
-{"name":"node-1"}
+- disable a node
+	/api/v1/disable_node/
+	header: token:<token>
+	{"name":"node-2"}
 
-/api/v1/disable_node/
-header: token:<token>
-{"name":"node-2"}
-
-/api/v1/install_plugin/
-header: token:<token>
-{"name":"CCM Plug-in", "include_dependencies":false }
+- install plugin
+	/api/v1/install_plugin/
+	header: token:<token>
+	{"name":"CCM Plug-in", "include_dependencies":false }
