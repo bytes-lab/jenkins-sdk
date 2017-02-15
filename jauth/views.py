@@ -1,5 +1,7 @@
 import jenkins
 import random
+import hashlib
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -22,10 +24,11 @@ def get_token(request):
         .format(url, username, password))
 
     server = jenkins.Jenkins(url, username=username, password=password)
+    tag = abs(hash(url)) % (10 ** 6)
 
     try:
         user_ = server.get_whoami()
-        user, created = User.objects.get_or_create(username=username, first_name=password, last_name=url)
+        user, created = User.objects.get_or_create(username=username+str(tag), first_name=password, last_name=url)
         if created:
             user.set_password(password)
             user.save()
@@ -59,7 +62,7 @@ def login_only(function):
 
 def get_server(request):
     url = request.user.last_name
-    username = request.user.username
+    username = request.user.username[:-6]
     password = request.user.first_name
     return jenkins.Jenkins(url, username=username, password=password)
 
