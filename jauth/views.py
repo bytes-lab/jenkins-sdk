@@ -80,14 +80,14 @@ def create_job(request):
 
     try:
         server.create_job(name, config_xml)
-        jobs = server.get_jobs()
+        # jobs = server.get_jobs()
     except Exception, e:
         log.debug(e)
         return Response({"status": "failed", 
                          "msg": e.message or "Invalid job name"})
 
     log.info('The job:{} is created successfully'.format(name))
-    return Response({"status": "success", "jobs": jobs})
+    return Response({"status": "success"})
 
 
 @api_view(["POST"])
@@ -100,14 +100,13 @@ def delete_job(request):
 
     try:
         server.delete_job(name)
-        jobs = server.get_jobs()
     except Exception, e:
         log.debug(e)
         return Response({"status": "failed", 
                          "msg": e.message})
 
     log.info('The job:{} is deleted successfully'.format(name))
-    return Response({"status": "success", "jobs": jobs})
+    return Response({"status": "success"})
 
 
 @api_view(["POST"])
@@ -119,16 +118,23 @@ def copy_job(request):
     to_name = request.data.get('to_name', '')
     log.debug('copy_job is called with from_name:{}, to_name:{}'.format(from_name, to_name))
 
+    if not server.get_job_name(from_name):
+        return Response({"status": "failed", 
+                         "msg": "Source job does not exist."})
+
+    if server.get_job_name(to_name):
+        return Response({"status": "failed", 
+                         "msg": "Destination job already exists."})
+
     try:
         server.copy_job(from_name, to_name)
-        jobs = server.get_jobs()
     except Exception, e:
         log.debug(e)
         return Response({"status": "failed", 
                          "msg": e.message or "Invalid job names"})
 
     log.info('The job:{} is copyed into job:{} successfully'.format(from_name, to_name))
-    return Response({"status": "success", "jobs": jobs})
+    return Response({"status": "success"})
 
 
 @api_view(["POST"])
@@ -206,12 +212,16 @@ def stop_build(request):
     server = get_server(request)
 
     name = request.data.get('name', '')
-    number = request.data.get('build_number')
+    number = int(request.data.get('build_number'))
 
     log.debug('stop_build is called with name:{}, number:{}' \
         .format(name, number))
 
     try:
+        is_building = server.get_build_info(name, number)
+        if not is_building.get('building'):
+            return Response({"status": "success", "msg": "The build already stoped"})
+
         server.stop_build(name, number)
     except Exception, e:
         log.debug(e)

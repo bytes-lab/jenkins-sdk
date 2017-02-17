@@ -47,7 +47,8 @@
 	/api/v1/reconfig_job/
 	header: token:<token>
 	{
-    	"name":"empty-1"
+    	"name":"empty-1",
+    	"config_xml":"<xml></xml>"
     }
     ```
 
@@ -81,7 +82,7 @@
 	header: token:<token>
 	{
     	"name":"empty-1", 
-        "build_number":"3"
+        "build_number":3
     }
     ```
 
